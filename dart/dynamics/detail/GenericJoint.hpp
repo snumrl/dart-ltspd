@@ -1781,15 +1781,10 @@ template <class ConfigSpaceT>
 void GenericJoint<ConfigSpaceT>::addChildArtInertiaToDynamic(
     Eigen::Matrix6d& parentArtInertia, const Eigen::Matrix6d& childArtInertia)
 {
-  // for linear time Stable PD
-  Eigen::MatrixXd Ki(mInvProjArtInertia.rows(), mInvProjArtInertia.cols());
-  Ki.setIdentity();
-  Ki *= Joint::mAspectProperties.ki;
-
   // Child body's articulated inertia
   JacobianMatrix AIS = childArtInertia * getRelativeJacobianStatic();
   Eigen::Matrix6d PI = childArtInertia;
-  PI.noalias() -= AIS * (mInvProjArtInertia + Ki)* AIS.transpose();
+  PI.noalias() -= AIS * mInvProjArtInertia * AIS.transpose();
   assert(!math::isNan(PI));
 
   // Add child body's articulated inertia to parent body's articulated inertia.
@@ -1838,15 +1833,10 @@ template <class ConfigSpaceT>
 void GenericJoint<ConfigSpaceT>::addChildArtInertiaImplicitToDynamic(
     Eigen::Matrix6d& parentArtInertia, const Eigen::Matrix6d& childArtInertia)
 {
-  // for linear time Stable PD
-  Eigen::MatrixXd Ki(mInvProjArtInertia.rows(), mInvProjArtInertia.cols());
-  Ki.setIdentity();
-  Ki *= Joint::mAspectProperties.ki;
-
   // Child body's articulated inertia
   JacobianMatrix AIS = childArtInertia * getRelativeJacobianStatic();
   Eigen::Matrix6d PI = childArtInertia;
-  PI.noalias() -= AIS * (mInvProjArtInertiaImplicit + Ki)* AIS.transpose();
+  PI.noalias() -= AIS * mInvProjArtInertiaImplicit * AIS.transpose();
   assert(!math::isNan(PI));
 
   // Add child body's articulated inertia to parent body's articulated inertia.
@@ -1895,9 +1885,14 @@ template <class ConfigSpaceT>
 void GenericJoint<ConfigSpaceT>::updateInvProjArtInertiaDynamic(
     const Eigen::Matrix6d& artInertia)
 {
+  // for linear time Stable PD
+  Eigen::MatrixXd Ki(mInvProjArtInertia.rows(), mInvProjArtInertia.cols());
+  Ki.setIdentity();
+  Ki *= Joint::mAspectProperties.ki;
+
   // Projected articulated inertia
   const JacobianMatrix& Jacobian = getRelativeJacobianStatic();
-  const Matrix projAI = Jacobian.transpose() * artInertia * Jacobian;
+  const Matrix projAI = Jacobian.transpose() * artInertia * Jacobian + Ki;
 
   // Inversion of projected articulated inertia
   mInvProjArtInertia = math::inverse<ConfigSpaceT>(projAI);
@@ -1943,9 +1938,14 @@ template <class ConfigSpaceT>
 void GenericJoint<ConfigSpaceT>::updateInvProjArtInertiaImplicitDynamic(
     const Eigen::Matrix6d& artInertia, double timeStep)
 {
+  // for linear time Stable PD
+  Eigen::MatrixXd Ki(mInvProjArtInertia.rows(), mInvProjArtInertia.cols());
+  Ki.setIdentity();
+  Ki *= Joint::mAspectProperties.ki;
+
   // Projected articulated inertia
   const JacobianMatrix& Jacobian = getRelativeJacobianStatic();
-  Matrix projAI = Jacobian.transpose() * artInertia * Jacobian;
+  Matrix projAI = Jacobian.transpose() * artInertia * Jacobian + Ki;
 
   // Add additional inertia for implicit damping and spring force
   projAI += (timeStep * Base::mAspectProperties.mDampingCoefficients

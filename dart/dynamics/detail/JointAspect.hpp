@@ -133,6 +133,9 @@ struct JointProperties
   /// Mimic joint properties
   double mMimicMultiplier, mMimicOffset;
 
+  /// SPD properties
+  double ki;
+
   /// Constructor
   JointProperties(
       const std::string& _name = "Joint",
@@ -144,7 +147,8 @@ struct JointProperties
       ActuatorType _actuatorType = DefaultActuatorType,
       const Joint* _mimicJoint = nullptr,
       double _mimicMultiplier = 1.0,
-      double _mimicOffset = 0.0);
+      double _mimicOffset = 0.0,
+      double _ki = 0.0);
 
   virtual ~JointProperties() = default;
 

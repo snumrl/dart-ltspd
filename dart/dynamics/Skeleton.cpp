@@ -3725,6 +3725,18 @@ void Skeleton::computeForwardKinematics(
 }
 
 //==============================================================================
+void Skeleton::setSPDTarget(const Eigen::VectorXd _target, double kp, double kd)
+{
+  double dt = getTimeStep();
+  Eigen::VectorXd _forces = kp * getPositionDifferences(_target, getPositions()) - (kp + kd * dt) * getVelocities();
+  setForces(_forces);
+  for (auto it = mSkelCache.mBodyNodes.begin();
+        it != mSkelCache.mBodyNodes.end();
+        ++it)
+    (*it)->getParentJoint()->setSPDParam(kd * dt);
+}
+
+//==============================================================================
 void Skeleton::computeForwardDynamics()
 {
   // Note: Articulated Inertias will be updated automatically when

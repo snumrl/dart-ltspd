@@ -497,6 +497,12 @@ void ZeroDofJoint::setForces(const Eigen::VectorXd& /*_forces*/)
 }
 
 //==============================================================================
+void ZeroDofJoint::setSPDParam(double /*_ki*/)
+{
+  // Do nothing
+}
+
+//==============================================================================
 Eigen::VectorXd ZeroDofJoint::getForces() const
 {
   return Eigen::Matrix<double, 0, 1>();

@@ -364,6 +364,8 @@ public:
   // Documentation inherited
   void setForces(const Eigen::VectorXd& forces) override;
 
+  void setSPDParam(double _ki) override;
+
   // Documentation inherited
   Eigen::VectorXd getForces() const override;
 

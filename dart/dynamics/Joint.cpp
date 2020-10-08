@@ -66,7 +66,8 @@ JointProperties::JointProperties(
     ActuatorType _actuatorType,
     const Joint* _mimicJoint,
     double _mimicMultiplier,
-    double _mimicOffset)
+    double _mimicOffset,
+    double _ki)
   : mName(_name),
     mT_ParentBodyToJoint(_T_ParentBodyToJoint),
     mT_ChildBodyToJoint(_T_ChildBodyToJoint),
@@ -74,7 +75,8 @@ JointProperties::JointProperties(
     mActuatorType(_actuatorType),
     mMimicJoint(_mimicJoint),
     mMimicMultiplier(_mimicMultiplier),
-    mMimicOffset(_mimicOffset)
+    mMimicOffset(_mimicOffset),
+    ki(_ki)
 {
   // Do nothing
 }

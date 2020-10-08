@@ -1204,6 +1204,13 @@ void GenericJoint<ConfigSpaceT>::setForces(const Eigen::VectorXd& forces)
 
 //==============================================================================
 template <class ConfigSpaceT>
+void GenericJoint<ConfigSpaceT>::setSPDParam(const double _ki)
+{
+  Joint::mAspectProperties.ki = _ki;
+}
+
+//==============================================================================
+template <class ConfigSpaceT>
 Eigen::VectorXd GenericJoint<ConfigSpaceT>::getForces() const
 {
   return this->mAspectState.mForces;
@@ -1308,6 +1315,7 @@ template <class ConfigSpaceT>
 void GenericJoint<ConfigSpaceT>::resetForces()
 {
   this->mAspectState.mForces.setZero();
+  setSPDParam(0.0);
 
   if (Joint::mAspectProperties.mActuatorType == Joint::FORCE)
     this->mAspectState.mCommands = this->mAspectState.mForces;
@@ -1773,10 +1781,15 @@ template <class ConfigSpaceT>
 void GenericJoint<ConfigSpaceT>::addChildArtInertiaToDynamic(
     Eigen::Matrix6d& parentArtInertia, const Eigen::Matrix6d& childArtInertia)
 {
+  // for linear time Stable PD
+  Eigen::MatrixXd Ki(mInvProjArtInertia.rows(), mInvProjArtInertia.cols());
+  Ki.setIdentity();
+  Ki *= Joint::mAspectProperties.ki;
+
   // Child body's articulated inertia
   JacobianMatrix AIS = childArtInertia * getRelativeJacobianStatic();
   Eigen::Matrix6d PI = childArtInertia;
-  PI.noalias() -= AIS * mInvProjArtInertia * AIS.transpose();
+  PI.noalias() -= AIS * (mInvProjArtInertia + Ki)* AIS.transpose();
   assert(!math::isNan(PI));
 
   // Add child body's articulated inertia to parent body's articulated inertia.
@@ -1825,10 +1838,15 @@ template <class ConfigSpaceT>
 void GenericJoint<ConfigSpaceT>::addChildArtInertiaImplicitToDynamic(
     Eigen::Matrix6d& parentArtInertia, const Eigen::Matrix6d& childArtInertia)
 {
+  // for linear time Stable PD
+  Eigen::MatrixXd Ki(mInvProjArtInertia.rows(), mInvProjArtInertia.cols());
+  Ki.setIdentity();
+  Ki *= Joint::mAspectProperties.ki;
+
   // Child body's articulated inertia
   JacobianMatrix AIS = childArtInertia * getRelativeJacobianStatic();
   Eigen::Matrix6d PI = childArtInertia;
-  PI.noalias() -= AIS * mInvProjArtInertiaImplicit * AIS.transpose();
+  PI.noalias() -= AIS * (mInvProjArtInertiaImplicit + Ki)* AIS.transpose();
   assert(!math::isNan(PI));
 
   // Add child body's articulated inertia to parent body's articulated inertia.

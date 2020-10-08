@@ -3729,7 +3729,8 @@ void Skeleton::setSPDTarget(const Eigen::VectorXd _target, double kp, double kd)
 {
   double dt = getTimeStep();
   Eigen::VectorXd _forces = kp * getPositionDifferences(_target, getPositions()) - (kp + kd * dt) * getVelocities();
-  setForces(_forces.tail(_forces.rows() - 6));
+  _forces.head(6).setZero();
+  setForces(_forces);
   for (auto it = mSkelCache.mBodyNodes.begin();
         it != mSkelCache.mBodyNodes.end();
         ++it)

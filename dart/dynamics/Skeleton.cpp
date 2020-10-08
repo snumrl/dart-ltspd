@@ -3728,7 +3728,7 @@ void Skeleton::computeForwardKinematics(
 void Skeleton::setSPDTarget(const Eigen::VectorXd _target, double kp, double kd)
 {
   double dt = getTimeStep();
-  Eigen::VectorXd _forces = kp * getPositionDifferences(_target, getPositions()) - (kp * dt + kp) * getVelocities();
+  Eigen::VectorXd _forces = kp * getPositionDifferences(_target, getPositions()) - (kp * dt + kd) * getVelocities();
   _forces.head(6).setZero();
   setForces(_forces);
   for (auto it = mSkelCache.mBodyNodes.begin();

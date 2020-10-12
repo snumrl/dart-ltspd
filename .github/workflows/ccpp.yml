@@ -158,23 +158,6 @@ jobs:
         BUILD_TYPE: Release
       run: sudo -E .ci/script.sh
 
-  catalina_clang_dartpy_release:
-    name: macOS 10.15 [Clang|dartpy|Release]
-    runs-on: macOS-10.15
-    steps:
-    - uses: actions/checkout@v1
-    - name: Install Dependencies
-      env:
-        COMPILER: clang
-        BUILD_DARTPY: ON
-      run: .ci/install.sh
-    - name: Build
-      env:
-        COMPILER: clang
-        BUILD_TYPE: Release
-        BUILD_DARTPY: ON
-      run: sudo -E .ci/script.sh
-
   windows_2019:
     name: Windows [Release]
     runs-on: windows-2019

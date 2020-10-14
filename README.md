@@ -8,3 +8,4 @@ Linear Time Stable PD[https://arpspoof.github.io/project/spd/spd.html] (SCA2020)
 * 기존에 setForces함수로 사용하던 코드도 사용 가능.
 * setForces 와 setSPDTarget 혼용도 가능하나, 한 step 안에서는 한 종류만 써야함. (e.g. setForces() => step() => setSPDTarget() => step() )
 * 기존 SPD 사용할 때와 비교하여 30 ~ 40 % 정도의 속도 향상 효과.
+* timestep을 생각보다 많이 줄여도 안정적임. (1/60 s 에서도 잘 작동. 1/100 ~ 1/300 사이로 쓰면 무난할듯.) 위 항목과 결합하면, 시뮬레이션 속도 수 배 향상 가능.

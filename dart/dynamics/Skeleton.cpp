@@ -51,6 +51,7 @@
 #include "dart/dynamics/SoftBodyNode.hpp"
 #include "dart/math/Geometry.hpp"
 #include "dart/math/Helpers.hpp"
+#include "dart/constraint/ConstraintSolver.hpp"
 
 #define SET_ALL_FLAGS(X)                                                       \
   for (auto& cache : mTreeCache)                                               \
@@ -3725,16 +3726,45 @@ void Skeleton::computeForwardKinematics(
 }
 
 //==============================================================================
-void Skeleton::setSPDTarget(const Eigen::VectorXd _target, double kp, double kd)
+void Skeleton::setSPDTarget(const Eigen::VectorXd& _target, double kp, double kd)
 {
   double dt = getTimeStep();
   Eigen::VectorXd _forces = kp * getPositionDifferences(_target, getPositions()) - (kp * dt + kd) * getVelocities();
   _forces.head(6).setZero();
   setForces(_forces);
-  for (auto it = mSkelCache.mBodyNodes.begin();
-        it != mSkelCache.mBodyNodes.end();
-        ++it)
-    (*it)->getParentJoint()->setSPDParam(kd * dt);
+  for (auto & mBodyNode : mSkelCache.mBodyNodes)
+    mBodyNode->getParentJoint()->setSPDParam(kd * dt);
+}
+
+//==============================================================================
+Eigen::VectorXd Skeleton::getSPDForces(const Eigen::VectorXd& _target, double kp, double kd, void* solver)
+{
+  Eigen::VectorXd _velocities_backup = getVelocities();
+
+  setSPDTarget(_target, kp, kd);
+
+  computeForwardDynamics();
+  integrateVelocities(getTimeStep());
+
+  // Detect activated constraints and compute constraint impulses
+  ((dart::constraint::ConstraintSolver*)solver)->solve();
+
+  // Compute velocity changes given constraint impulses
+  if (isImpulseApplied())
+  {
+    computeImpulseForwardDynamics();
+    setImpulseApplied(false);
+  }
+
+  Eigen::VectorXd _forces = getForces();
+  _forces.head(6).setZero();
+
+  for (auto & mBodyNode : mSkelCache.mBodyNodes)
+    mBodyNode->getParentJoint()->setSPDParam(0.0);
+
+  setVelocities(_velocities_backup);
+
+  return getForces();
 }
 
 //==============================================================================
